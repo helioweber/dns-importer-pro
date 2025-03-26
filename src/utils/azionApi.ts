@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 import { DnsRecord, formatRecordsForAzion } from './dnsParser';
 
@@ -8,6 +7,22 @@ interface ImportConfig {
   onProgress?: (progress: number, importedCount: number) => void;
   onComplete?: () => void;
   onError?: (error: string) => void;
+}
+
+interface AzionZone {
+  id: number;
+  name: string;
+  domain: string;
+  is_active: boolean;
+}
+
+interface AzionResponse<T> {
+  results: T[];
+  total?: number;
+}
+
+interface AzionSingleResponse<T> {
+  results: T;
 }
 
 /**
@@ -119,40 +134,26 @@ export const importRecordsToAzion = async (
  * Adds a single DNS record to Azion
  */
 const addDnsRecord = async (record: any, zoneId: string, apiKey: string): Promise<any> => {
-  // This is a simulation in this example
-  // In a real implementation, this would make an actual API call
-  
-  // Simulate API call
-  console.log(`[API] Adding record to zone ${zoneId}:`, record);
-  
-  // Simulate random success/failure and network delay
-  await new Promise(resolve => setTimeout(resolve, 100 + Math.random() * 300));
-  
-  // In a real implementation, this would be:
-  /*
-  const response = await fetch(`https://api.azion.com/zones/${zoneId}/records`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Token ${apiKey}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify(record)
-  });
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || `API error: ${response.status}`);
-  }
-  
-  return await response.json();
-  */
-  
-  // For now, simulate success
-  if (Math.random() > 0.1) { // 90% success rate for simulation
-    return { id: Math.floor(Math.random() * 10000), ...record };
-  } else {
-    throw new Error('Simulated API error');
+  try {
+    const response = await fetch(`https://api.azion.com/intelligent_dns/${zoneId}/records`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json; version=3',
+        'Authorization': `Token ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(record)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || `API error: ${response.status}`);
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error('Error adding DNS record:', error);
+    throw error;
   }
 };
 
@@ -160,72 +161,62 @@ const addDnsRecord = async (record: any, zoneId: string, apiKey: string): Promis
  * Finds a zone by name in Azion
  */
 const findZoneByName = async (name: string, apiKey: string): Promise<string> => {
-  // This is a simulation
-  console.log(`[API] Looking for zone with name: ${name}`);
-  
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 300));
-  
-  // In a real implementation, we would search the zones
-  /*
-  const response = await fetch(`https://api.azion.com/zones?name=${encodeURIComponent(name)}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Token ${apiKey}`,
-      'Accept': 'application/json'
+  try {
+    const encodedName = encodeURIComponent(name);
+    const response = await fetch(`https://api.azion.com/intelligent_dns?name=${encodedName}`, {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json; version=3',
+        'Authorization': `Token ${apiKey}`
+      }
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API error: ${response.status}`);
     }
-  });
-  
-  if (!response.ok) {
-    throw new Error(`API error: ${response.status}`);
+    
+    const data = await response.json() as AzionResponse<AzionZone>;
+    
+    if (data.results && data.results.length > 0) {
+      return String(data.results[0].id);
+    }
+    
+    throw new Error('Zone not found');
+  } catch (error) {
+    console.error('Error finding zone by name:', error);
+    throw error;
   }
-  
-  const data = await response.json();
-  if (data.results && data.results.length > 0) {
-    return data.results[0].id;
-  }
-  */
-  
-  // For simulation, return null to simulate zone not found
-  throw new Error('Zone not found');
 };
 
 /**
  * Creates a new zone in Azion
  */
 const createZone = async (domainName: string, apiKey: string): Promise<string> => {
-  // This is a simulation
-  console.log(`[API] Creating zone for domain: ${domainName}`);
-  
-  // Simulate network delay
-  await new Promise(resolve => setTimeout(resolve, 500));
-  
-  // In a real implementation, we would create the zone
-  /*
-  const response = await fetch('https://api.azion.com/zones', {
-    method: 'POST',
-    headers: {
-      'Authorization': `Token ${apiKey}`,
-      'Content-Type': 'application/json',
-      'Accept': 'application/json'
-    },
-    body: JSON.stringify({
-      name: domainName,
-      domain: domainName
-    })
-  });
-  
-  if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.message || `API error: ${response.status}`);
+  try {
+    const response = await fetch('https://api.azion.com/intelligent_dns', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json; version=3',
+        'Authorization': `Token ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: domainName,
+        domain: domainName
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || `API error: ${response.status}`);
+    }
+    
+    const data = await response.json() as AzionSingleResponse<AzionZone>;
+    return String(data.results.id);
+  } catch (error) {
+    console.error('Error creating zone:', error);
+    throw error;
   }
-  
-  const data = await response.json();
-  return data.id;
-  */
-  
-  // For simulation, return a random ID
-  return String(Math.floor(Math.random() * 10000));
 };
 
 /**
