@@ -1,15 +1,5 @@
-
 import { v4 as uuidv4 } from 'uuid';
-
-export interface DnsRecord {
-  id: string;
-  name: string;
-  type: string;
-  value: string;
-  ttl: string;
-  isValid: boolean;
-  error?: string;
-}
+import { DnsRecord } from './types/azionTypes';
 
 /**
  * Parses BIND DNS configuration text
