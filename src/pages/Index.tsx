@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,7 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, Terminal, Upload, X, Shield, AlertCircle, Code, Github } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 import FileUpload from '@/components/FileUpload';
 import DnsRecordsList from '@/components/DnsRecordsList';
@@ -28,7 +27,6 @@ const Index = () => {
   const [importError, setImportError] = useState('');
   const [fileContent, setFileContent] = useState('');
   
-  // Parse DNS records when file content changes
   useEffect(() => {
     if (fileContent) {
       try {
@@ -64,7 +62,6 @@ const Index = () => {
       return;
     }
     
-    // Get selected records
     const recordsToImport = dnsRecords.filter(
       record => selectedRecords.includes(record.id) && record.isValid
     );
@@ -74,7 +71,6 @@ const Index = () => {
       return;
     }
     
-    // Start import process
     setImportStatus('importing');
     setImportProgress(0);
     setImportedCount(0);
@@ -168,13 +164,11 @@ const Index = () => {
           </TabsList>
           
           <TabsContent value="import" className="space-y-8">
-            {/* File upload area */}
             <section>
               <h2 className="text-xl font-semibold mb-4 text-center">Carregue o arquivo de configuração BIND</h2>
               <FileUpload onFileLoaded={handleFileLoaded} />
             </section>
             
-            {/* Records list & import status */}
             {dnsRecords.length > 0 && (
               <div className="space-y-8">
                 <Separator />

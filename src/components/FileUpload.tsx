@@ -1,9 +1,8 @@
-
 import React, { useState, useRef } from 'react';
 import { Upload, FileText, AlertCircle } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { cn } from '@/lib/utils';
-import { toast } from '@/components/ui/sonner';
+import { toast } from 'sonner';
 
 interface FileUploadProps {
   onFileLoaded: (content: string) => void;
