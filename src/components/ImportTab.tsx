@@ -28,9 +28,7 @@ interface ImportTabProps {
 
 const ImportTab = ({
   dnsRecords,
-  selectedRec
-
-ords,
+  selectedRecords,
   apiKey,
   zoneId,
   importStatus,
