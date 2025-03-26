@@ -4,7 +4,7 @@
  */
 export const addDnsRecord = async (record: any, zoneId: string, apiKey: string): Promise<any> => {
   try {
-    const response = await fetch(`https://api.azion.com/intelligent_dns/${zoneId}/records`, {
+    const response = await fetch(`https://api.azion.net/intelligent_dns/${zoneId}/records`, {
       method: 'POST',
       headers: {
         'Accept': 'application/json; version=3',
