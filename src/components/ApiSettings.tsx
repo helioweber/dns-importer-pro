@@ -66,7 +66,7 @@ const ApiSettings = ({
       
       <div className="text-sm text-muted-foreground flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
         <AlertCircle className="h-4 w-4 shrink-0" />
-        <p>Todos os registros serão enviados para a API da Azion em <code>api.azion.com</code></p>
+        <p>Todos os registros serão enviados para a API da Azion em <code>api.azion.net</code></p>
       </div>
     </div>
   );
