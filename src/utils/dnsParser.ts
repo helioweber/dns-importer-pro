@@ -55,6 +55,11 @@ export const parseDnsConfig = (bindText: string): DnsRecord[] => {
         idx++;
       }
       
+      // Get record type (skip IN class)
+      if (parts[idx] === 'IN') {
+        idx++;
+      }
+      
       // Get record type
       if (parts[idx]) {
         type = parts[idx].toUpperCase();
@@ -119,27 +124,76 @@ export const parseDnsConfig = (bindText: string): DnsRecord[] => {
  */
 export const formatRecordsForAzion = (records: DnsRecord[]) => {
   return records.map(record => {
-    // Create a base record object
-    const azionRecord: any = {
-      name: record.name,
-      type: record.type,
-      value: record.value,
+    // Skip SOA records as they are not supported by Azion API
+    if (record.type === 'SOA') {
+      console.log('Skipping SOA record:', record);
+      return null;
+    }
+
+    // Skip NS records as they are not supported by Azion API
+    if (record.type === 'NS') {
+      console.log('Skipping NS record:', record);
+      return null;
+    }
+
+    // Create a base record object matching Azion API format
+    const azionRecord = {
+      record_type: record.type,
+      entry: record.name,
+      answers_list: [] as string[],
+      ttl: record.ttl === 'Default' ? 3600 : parseInt(record.ttl, 10)
     };
     
-    // Add TTL if it's not the default
-    if (record.ttl && record.ttl !== 'Default') {
-      azionRecord.ttl = parseInt(record.ttl, 10);
+    // Handle different record types
+    switch (record.type) {
+      case 'A':
+      case 'AAAA':
+        // For A/AAAA records, just use the IP address
+        azionRecord.answers_list = [record.value.trim()];
+        break;
+        
+      case 'CNAME':
+        // For CNAME, handle @ symbol and remove trailing dots
+        let cnameValue = record.value.replace(/\.$/, '');
+        if (cnameValue === '@') {
+          // If CNAME points to @, use the domain name
+          cnameValue = record.name;
+        }
+        azionRecord.answers_list = [cnameValue];
+        break;
+        
+      case 'MX':
+        const mxParts = record.value.split(/\s+/);
+        if (mxParts.length >= 2) {
+          // For MX records, format as "priority hostname"
+          const priority = mxParts[0];
+          const hostname = mxParts.slice(1).join(' ').replace(/\.$/, '');
+          azionRecord.answers_list = [`${priority} ${hostname}`];
+        }
+        break;
+        
+      case 'TXT':
+        // For TXT records, remove quotes and any type prefix
+        azionRecord.answers_list = [record.value.replace(/^"(.*)"$/, '$1').replace(/^TXT\s+/, '')];
+        break;
+        
+      default:
+        // For other record types, just use the value
+        azionRecord.answers_list = [record.value.trim()];
     }
     
-    // Handle MX records (separate priority and value)
-    if (record.type === 'MX') {
-      const mxParts = record.value.split(/\s+/);
-      if (mxParts.length >= 2) {
-        azionRecord.value = mxParts.slice(1).join(' ');
-        azionRecord.priority = parseInt(mxParts[0], 10);
-      }
+    // Validate the record before returning
+    if (!azionRecord.answers_list.length) {
+      console.warn(`Skipping record ${record.type} for ${record.name} due to empty answers_list`);
+      return null;
     }
+    
+    // Log the formatted record for debugging
+    console.log('Formatted record for Azion:', {
+      original: record,
+      formatted: azionRecord
+    });
     
     return azionRecord;
-  });
+  }).filter((record): record is NonNullable<typeof record> => record !== null);
 };

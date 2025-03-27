@@ -1,4 +1,3 @@
-
 import { toast } from 'sonner';
 import { DnsRecord } from './types/azionTypes';
 import { formatRecordsForAzion } from './dnsParser';
@@ -62,7 +61,7 @@ export const importRecordsToAzion = async (
       
       // Process each record in the chunk
       const results = await Promise.allSettled(
-        chunk.map(record => addDnsRecord(record, zoneId as string, config.apiKey))
+        chunk.map(record => addDnsRecord(zoneId as string, record, config.apiKey))
       );
       
       // Count successful records
@@ -100,14 +99,10 @@ export const importRecordsToAzion = async (
     
     return true;
   } catch (error) {
-    const errorMessage = (error as Error).message || 'Erro desconhecido ao importar registros';
-    console.error('Import error:', error);
-    
+    console.error('Error importing records:', error);
     if (config.onError) {
-      config.onError(errorMessage);
+      config.onError((error as Error).message);
     }
-    
-    toast.error(errorMessage);
     return false;
   }
 };
