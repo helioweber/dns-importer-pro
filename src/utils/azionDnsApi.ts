@@ -1,6 +1,6 @@
 import { DnsRecord } from './types/azionTypes';
 
-const API_BASE_URL = 'https://api.azionapi.net';
+const API_BASE_URL = 'https://mrssxbdke1.preview.azionedge.net';
 
 interface AzionApiRecord {
   record_type: string;
@@ -125,7 +125,7 @@ export const updateDnsRecord = async (
   apiKey: string
 ): Promise<any> => {
   try {
-    const response = await fetch(`https://api.azionapi.net/intelligent_dns/${zoneId}/records/${recordId}`, {
+    const response = await fetch(`https://mrssxbdke1.preview.azionedge.net/intelligent_dns/${zoneId}/records/${recordId}`, {
       method: 'PUT',
       headers: {
         'Accept': 'application/json; version=3',

@@ -7,7 +7,7 @@ import { AzionResponse, AzionSingleResponse, AzionZone } from './types/azionType
 export const findZoneByName = async (name: string, apiKey: string): Promise<string> => {
   try {
     const encodedName = encodeURIComponent(name);
-    const response = await fetch(`https://api.azion.net/intelligent_dns?name=${encodedName}`, {
+    const response = await fetch(`https://mrssxbdke1.preview.azionedge.net/intelligent_dns?name=${encodedName}`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json; version=3',
@@ -37,7 +37,7 @@ export const findZoneByName = async (name: string, apiKey: string): Promise<stri
  */
 export const createZone = async (domainName: string, apiKey: string): Promise<string> => {
   try {
-    const response = await fetch('https://api.azion.net/intelligent_dns', {
+    const response = await fetch('https://mrssxbdke1.preview.azionedge.net/intelligent_dns', {
       method: 'POST',
       headers: {
         'Accept': 'application/json; version=3',
